@@ -10,6 +10,7 @@ type TNumber = Integer
 numberParser:: Parsec String st TNumber
 -- numberParser = read <$> (many $ oneOf "0123456789")
 numberParser = do
+  spaces
   x <- many $ oneOf "0123456789"
   return $ read x
 
@@ -141,6 +142,97 @@ calcBool (BCompare a o b) = (oo o) (calcExpression a) (calcExpression b)
         oo COGe = (>=)
         oo CONeq = (/=)
 
+
+type TVar = String
+data TProgram = PExit
+  | PError
+  | PAssign TVar TExpression
+  | PWhile TBool TProgram
+  | PIf TBool TProgram
+  | PIfElse TBool TProgram TProgram
+  deriving Show
+
+programParser :: Parsec String st TProgram
+programParser =
+  try (do
+          spaces
+          string "WHILE"
+          spaces
+          char '['
+          spaces
+          b <- boolParser
+          spaces
+          char ']'
+          spaces
+          char '{'
+          spaces
+          x <- programParser
+          spaces
+          char '}'
+          return $ PWhile b x
+          )
+  <|>
+  try (do
+          spaces
+          string "IF"
+          spaces
+          char '['
+          spaces
+          b <- boolParser
+          spaces
+          char ']'
+          spaces
+          char '{'
+          spaces
+          x <- programParser
+          spaces
+          char '}'
+          spaces
+          string "ELSE"
+          spaces
+          char '{'
+          spaces
+          y <- programParser
+          spaces
+          char '}'
+          return $ PIfElse b x y
+          )
+  <|>
+  try (do
+          spaces
+          string "IF"
+          spaces
+          char '['
+          spaces
+          b <- boolParser
+          spaces
+          char ']'
+          spaces
+          char '{'
+          spaces
+          x <- programParser
+          spaces
+          char '}'
+          return $ PIf b x
+          )
+  <|>
+  try (do
+          spaces
+          x <- many $ oneOf "abcdefghijklmnopqrstuvwxyz'_"
+          spaces
+          char '='
+          spaces
+          e <- expressionParser
+          return $ PAssign x e
+          )
+  <|>
+  try (do
+          spaces
+          x <- (string "EXIT") <|> (string "ERROR")
+          return $ case x of
+            "EXIT" -> PExit
+            "ERROR" -> PError
+          )
 
 main :: IO ()
 main = someFunc
