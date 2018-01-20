@@ -2,10 +2,11 @@ module Main where
 
 import Lib
 import Text.Parsec
+import Data.Ratio
 
 test p = parse p ""
 
-type TNumber = Int
+type TNumber = Integer
 numberParser:: Parsec String st TNumber
 -- numberParser = read <$> (many $ oneOf "0123456789")
 numberParser = do
@@ -44,9 +45,14 @@ expressionParser =
   x <- numberParser
   return $ ENum x)
   
--- expressionParser :: Parsec String st TExpression
--- expressionParser = do
---   x <- numberParser
+calcExpression :: TExpression -> Rational
+calcExpression (ENum n) = n % 1
+calcExpression (EBin a o b) =
+  case o of
+    OAdd -> (calcExpression a) + (calcExpression b)
+    OSub -> (calcExpression a) - (calcExpression b)
+    OMult -> (calcExpression a) * (calcExpression b)
+    ODiv -> (calcExpression a) / (calcExpression b)
   
 
 main :: IO ()
