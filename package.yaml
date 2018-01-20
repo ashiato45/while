@@ -1,0 +1,50 @@
+name:                while
+version:             0.1.0.0
+github:              "ashiato45/while"
+license:             BSD3
+author:              "ashiato45"
+maintainer:          "grapefruitgame@gmail.com"
+copyright:           "ashiato45"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            individual
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/ashiato45/while#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- parsec
+- text
+
+library:
+  source-dirs: src
+
+executables:
+  while-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - while
+
+tests:
+  while-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - while
