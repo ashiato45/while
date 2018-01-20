@@ -1,0 +1,10 @@
+
+*Main Lib> :set -XFlexibleContexts
+*Main Lib> let test p = parse p ""
+*Main Lib> test numberParser "11"
+Right 11
+*Main Lib> test numberParser "112"
+Right 112
+*Main Lib> 
+Leaving GHCi.
+
