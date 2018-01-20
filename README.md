@@ -4,7 +4,7 @@ An implementation of usual WHILE language.
 
 ## Usage
 Currently it works as a library and does not work as a standalone application.
-Open `stack ghci` in the directory and use the run.
+Open `stack ghci` in the directory and use functions `programParser` and `clacProgram`.
 For example:
 ```
 *Main Lib> let ast = test programParser "x=100;y=0;WHILE[(x>0)]{y=(y+x);x=(x-1)}"
