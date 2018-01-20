@@ -3,15 +3,23 @@ module Main where
 import Lib
 import Text.Parsec
 import Data.Ratio
+-- import Data.Map
+import Data.Map.Strict
 
 test p = parse p ""
 
+
+chars_variable = "abcdefghijklmnopqrstuvwxyz'_"
+
+type TVar = String
 type TNumber = Integer
+type Env = Map TVar Rational
+
 numberParser:: Parsec String st TNumber
 -- numberParser = read <$> (many $ oneOf "0123456789")
 numberParser = do
-  spaces
-  x <- many $ oneOf "0123456789"
+--  x <- many $ oneOf "0123456789"
+  x <- many1 $ digit  
   return $ read x
 
 data TOperator = OAdd | OSub | OMult | ODiv
@@ -25,10 +33,11 @@ operatorParser = do
     '*' -> OMult
     '/' -> ODiv
 
-data TExpression = ENum TNumber | EBin TExpression TOperator TExpression
+data TExpression = ENum TNumber | EVar TVar | EBin TExpression TOperator TExpression
   deriving (Show)
 expressionParser :: Parsec String st TExpression
-expressionParser = 
+expressionParser =
+  try
   (do
       spaces
       char '('
@@ -42,18 +51,25 @@ expressionParser =
       char ')'
       return $ EBin a x b)
   <|>
-  (do
+  try (do
   x <- numberParser
   return $ ENum x)
+  <|>
+  (do
+      spaces
+      x <- many1 $ oneOf chars_variable
+      return $ EVar x
+  )
   
-calcExpression :: TExpression -> Rational
-calcExpression (ENum n) = n % 1
-calcExpression (EBin a o b) =
+calcExpression :: Env -> TExpression -> Rational
+calcExpression _ (ENum n) = n % 1
+calcExpression e (EVar x) = e ! x
+calcExpression e (EBin a o b) =
   case o of
-    OAdd -> (calcExpression a) + (calcExpression b)
-    OSub -> (calcExpression a) - (calcExpression b)
-    OMult -> (calcExpression a) * (calcExpression b)
-    ODiv -> (calcExpression a) / (calcExpression b)
+    OAdd -> (calcExpression e a) + (calcExpression e b)
+    OSub -> (calcExpression e a) - (calcExpression e b)
+    OMult -> (calcExpression e a) * (calcExpression e b)
+    ODiv -> (calcExpression e a) / (calcExpression e b)
 
 data TBoolOperator = BOAnd | BOOr
   deriving Show
@@ -127,14 +143,14 @@ boolParser =
   )
 
 
-calcBool :: TBool -> Bool
-calcBool BTrue = True
-calcBool BFalse = False
-calcBool (BNot b) = not $ calcBool b
-calcBool (BBin a o b) = (oo o) (calcBool a) (calcBool b)
+calcBool :: Env -> TBool -> Bool
+calcBool _ BTrue = True
+calcBool _ BFalse = False
+calcBool e (BNot b) = not $ calcBool e b
+calcBool e (BBin a o b) = (oo o) (calcBool e a) (calcBool e b)
   where oo BOAnd = (&&)
         oo BOOr = (||)
-calcBool (BCompare a o b) = (oo o) (calcExpression a) (calcExpression b)
+calcBool e (BCompare a o b) = (oo o) (calcExpression e a) (calcExpression e b)
   where oo COEq = (==)
         oo COLt = (<)
         oo COLe = (<=)
@@ -143,7 +159,6 @@ calcBool (BCompare a o b) = (oo o) (calcExpression a) (calcExpression b)
         oo CONeq = (/=)
 
 
-type TVar = String
 data TProgram = PExit
   | PError
   | PAssign TVar TExpression
@@ -218,7 +233,7 @@ programParser =
   <|>
   try (do
           spaces
-          x <- many $ oneOf "abcdefghijklmnopqrstuvwxyz'_"
+          x <- many1 $ oneOf chars_variable
           spaces
           char '='
           spaces

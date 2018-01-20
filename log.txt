@@ -8,3 +8,10 @@ Right 112
 *Main Lib> 
 Leaving GHCi.
 
+*Main Lib> let m = Data.Map.Strict.fromList [("x", 2%1)]
+*Main Lib> let x = test expressionParser "(x+3)"
+*Main Lib> x
+Right (EBin (EVar "x") OAdd (ENum 3))
+*Main Lib> fmap (calcExpression m) x
+Right (5 % 1)
+*Main Lib> 
