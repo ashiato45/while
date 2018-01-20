@@ -19,8 +19,8 @@ eop ::= + | - | * | /
 exp ::= integer | variable | (exp eop exp)
 bop ::= & | |
 comp ::= == | < | <= | > | >= | !=
-bool = TRUE | FALSE | (bool bop bool) | !bop | (exp comp exp)
-prog = EXIT | ERROR | var = exp | prog;prog | WHILE[bool]{prog} | IF[bool]{prog} | IF[bool]{prog}ELSE{prog}
+bool ::= TRUE | FALSE | (bool bop bool) | !bop | (exp comp exp)
+prog ::= EXIT | ERROR | var = exp | prog;prog | WHILE[bool]{prog} | IF[bool]{prog} | IF[bool]{prog}ELSE{prog}
 ```
 Alphabets "abcdefghijklmnopqrstuvwxyz'_" can be used as a name of a variable.
 
