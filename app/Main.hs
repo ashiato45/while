@@ -124,7 +124,23 @@ boolParser =
         "TRUE" -> BTrue
         "FALSE" -> BFalse
   )
-           
+
+
+calcBool :: TBool -> Bool
+calcBool BTrue = True
+calcBool BFalse = False
+calcBool (BNot b) = not $ calcBool b
+calcBool (BBin a o b) = (oo o) (calcBool a) (calcBool b)
+  where oo BOAnd = (&&)
+        oo BOOr = (||)
+calcBool (BCompare a o b) = (oo o) (calcExpression a) (calcExpression b)
+  where oo COEq = (==)
+        oo COLt = (<)
+        oo COLe = (<=)
+        oo COGt = (>)
+        oo COGe = (>=)
+        oo CONeq = (/=)
+
 
 main :: IO ()
 main = someFunc
