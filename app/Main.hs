@@ -266,9 +266,33 @@ programParser =
   programParserHelp
 
 
-calcProgram :: Env -> TProgram -> (Bool, Env)
-calcProgram e PExit = (True, e)
-calcProgram e PError = (False, e)
+type TSafe = Bool
+type THalt = Bool
+calcProgramHelp :: Env -> TProgram -> (TSafe, THalt, Env)
+calcProgramHelp e PExit = (True, True, e)
+calcProgramHelp e PError = (False, True, e)
+calcProgramHelp e (PNext a b) =
+  let (s', h', e') = calcProgramHelp e a
+  in case h' of
+    False -> calcProgramHelp e' b
+    True -> (s', True, e')
+calcProgramHelp e (PAssign v exp) = (False, False, insert v (calcExpression e exp) e)
+calcProgramHelp e (PIf b p) = case (calcBool e b) of
+  True -> calcProgramHelp e p
+  False -> (False, False, e)
+calcProgramHelp e (PIfElse b p1 p2) = case (calcBool e b) of
+  True -> calcProgramHelp e p1
+  False -> calcProgramHelp e p2
+calcProgramHelp e (PWhile b p) = 
+  let p' = PIf b (PNext p (PWhile b p))
+  in calcProgramHelp e p'
+
+
+calcProgram :: Env -> TProgram -> (TSafe, Env)
+calcProgram e p = let (s', _, e') = calcProgramHelp e p
+              in (s', e')
+
+    
 
 main :: IO ()
 main = someFunc
