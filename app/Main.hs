@@ -23,5 +23,31 @@ operatorParser = do
     '*' -> TMult
     '/' -> TDiv
 
+data TExpression = ENum TNumber | EBin TExpression TOperator TExpression
+  deriving (Show)
+testParser :: Parsec String st TExpression
+testParser = 
+  (do
+      spaces
+      char '('
+      spaces
+      a <- numberParser
+      spaces
+      x <- operatorParser
+      spaces
+      b <- numberParser
+      spaces
+      char ')'
+      return $ EBin (ENum a) x (ENum b))
+  <|>
+  (do
+  x <- numberParser
+  return $ ENum x)
+  
+-- expressionParser :: Parsec String st TExpression
+-- expressionParser = do
+--   x <- numberParser
+  
+
 main :: IO ()
 main = someFunc
