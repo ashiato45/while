@@ -162,13 +162,14 @@ calcBool e (BCompare a o b) = (oo o) (calcExpression e a) (calcExpression e b)
 data TProgram = PExit
   | PError
   | PAssign TVar TExpression
+  | PNext TProgram TProgram
   | PWhile TBool TProgram
   | PIf TBool TProgram
   | PIfElse TBool TProgram TProgram
   deriving Show
 
-programParser :: Parsec String st TProgram
-programParser =
+programParserHelp :: Parsec String st TProgram
+programParserHelp =
   try (do
           spaces
           string "WHILE"
@@ -243,11 +244,31 @@ programParser =
   <|>
   try (do
           spaces
-          x <- (string "EXIT") <|> (string "ERROR")
+          x <- try (string "EXIT") <|> (string "ERROR")
           return $ case x of
             "EXIT" -> PExit
             "ERROR" -> PError
           )
+
+
+programParser :: Parsec String st TProgram
+programParser =
+    try (do
+          spaces
+          x <- programParserHelp
+          spaces
+          char ';'
+          spaces
+          y <- programParser
+          return $ PNext x y
+          )
+  <|>
+  programParserHelp
+
+
+calcProgram :: Env -> TProgram -> (Bool, Env)
+calcProgram e PExit = (True, e)
+calcProgram e PError = (False, e)
 
 main :: IO ()
 main = someFunc
