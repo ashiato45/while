@@ -12,33 +12,33 @@ numberParser = do
   x <- many $ oneOf "0123456789"
   return $ read x
 
-data TOperator = TAdd | TSub | TMult | TDiv
+data TOperator = OAdd | OSub | OMult | ODiv
   deriving Show
 operatorParser :: Parsec String st TOperator
 operatorParser = do
   x <- oneOf "+-*/"
   return $ case x of
-    '+' -> TAdd
-    '-' -> TSub
-    '*' -> TMult
-    '/' -> TDiv
+    '+' -> OAdd
+    '-' -> OSub
+    '*' -> OMult
+    '/' -> ODiv
 
 data TExpression = ENum TNumber | EBin TExpression TOperator TExpression
   deriving (Show)
-testParser :: Parsec String st TExpression
-testParser = 
+expressionParser :: Parsec String st TExpression
+expressionParser = 
   (do
       spaces
       char '('
       spaces
-      a <- numberParser
+      a <- expressionParser
       spaces
       x <- operatorParser
       spaces
-      b <- numberParser
+      b <- expressionParser
       spaces
       char ')'
-      return $ EBin (ENum a) x (ENum b))
+      return $ EBin a x b)
   <|>
   (do
   x <- numberParser
