@@ -11,10 +11,6 @@ test p = parse p ""
 
 chars_variable = "abcdefghijklmnopqrstuvwxyz'_"
 
-type TVar = String
-type TNumber = Integer
-type Env = Map TVar Rational
-
 numberParser:: Parsec String st TNumber
 -- numberParser = read <$> (many $ oneOf "0123456789")
 numberParser = do
@@ -22,8 +18,6 @@ numberParser = do
   x <- many1 $ digit  
   return $ read x
 
-data TOperator = OAdd | OSub | OMult | ODiv
-  deriving Show
 operatorParser :: Parsec String st TOperator
 operatorParser = do
   x <- oneOf "+-*/"
@@ -33,8 +27,6 @@ operatorParser = do
     '*' -> OMult
     '/' -> ODiv
 
-data TExpression = ENum TNumber | EVar TVar | EBin TExpression TOperator TExpression
-  deriving (Show)
 expressionParser :: Parsec String st TExpression
 expressionParser =
   try
@@ -71,16 +63,6 @@ calcExpression e (EBin a o b) =
     OMult -> (calcExpression e a) * (calcExpression e b)
     ODiv -> (calcExpression e a) / (calcExpression e b)
 
-data TBoolOperator = BOAnd | BOOr
-  deriving Show
-data TCompareOperator = COEq | COLt | COLe | COGt | COGe | CONeq
-  deriving Show
-data TBool = BTrue
-           | BFalse
-           | BBin TBool TBoolOperator TBool
-           | BNot TBool
-           | BCompare TExpression TCompareOperator TExpression
-  deriving Show
 boolParser :: Parsec String st TBool
 boolParser =
   try (do
@@ -159,14 +141,6 @@ calcBool e (BCompare a o b) = (oo o) (calcExpression e a) (calcExpression e b)
         oo CONeq = (/=)
 
 
-data TProgram = PExit
-  | PError
-  | PAssign TVar TExpression
-  | PNext TProgram TProgram
-  | PWhile TBool TProgram
-  | PIf TBool TProgram
-  | PIfElse TBool TProgram TProgram
-  deriving Show
 
 programParserHelp :: Parsec String st TProgram
 programParserHelp =
@@ -266,8 +240,6 @@ programParser =
   programParserHelp
 
 
-type TSafe = Bool
-type THalt = Bool
 calcProgramHelp :: Env -> TProgram -> (TSafe, THalt, Env)
 calcProgramHelp e PExit = (True, True, e)
 calcProgramHelp e PError = (False, True, e)
